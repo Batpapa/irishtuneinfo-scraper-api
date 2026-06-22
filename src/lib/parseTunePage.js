@@ -94,13 +94,14 @@ function parseFeaturedAudio($) {
 }
 
 function parseInfoTable($) {
-  // "Rhythm | Bars | 8-bar phrase structure | Mode" table
+  // "Rhythm | Bars | 8-bar phrase structure | Mode" table — some pages label the
+  // first column "Type" instead of "Rhythm" (observed on a subset of tune pages).
   // Find the header row and the data row immediately following it.
   let headerRow = null;
 
   $("table").each((_, table) => {
     const firstRowText = $(table).find("tr").first().text();
-    if (/Rhythm/i.test(firstRowText) && /Mode/i.test(firstRowText)) {
+    if (/Rhythm|Type/i.test(firstRowText) && /Mode/i.test(firstRowText)) {
       headerRow = table;
       return false;
     }
@@ -130,7 +131,7 @@ function parseInfoTable($) {
     data[h] = values[i] ?? null;
   });
 
-  const rhythmKey = headers.find((h) => /Rhythm/i.test(h));
+  const rhythmKey = headers.find((h) => /Rhythm|Type/i.test(h));
   const barsKey = headers.find((h) => /Bars/i.test(h));
   const structureKey = headers.find((h) => /structure/i.test(h));
   const modeKey = headers.find((h) => /Mode/i.test(h));
