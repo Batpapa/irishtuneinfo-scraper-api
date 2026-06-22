@@ -159,4 +159,4 @@ The one relevant `Disallow` rule blocks crawling `*.mp3` files. `robots.txt` rul
 ## Known limitations
 
 - Test fixtures cover one representative case per scenario, not every possible page variation. The parsers aim to fail safe (returning an empty result rather than crashing) when they encounter unexpected structure, but full coverage isn't guaranteed.
-- The `lookfor=exact` search parameter is implemented but not extensively tested.
+- The `lookfor=string` and `lookfor=notes` search modes are implemented but not extensively tested (`words`, the default, is the most exercised).
