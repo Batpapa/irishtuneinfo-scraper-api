@@ -127,7 +127,7 @@ const AUDIO_MIN_DELAY_MS = 2000;  // 2s between audio requests
 
 This isn't a guess: at the page pool's delay (200ms), repeated `/album/*.mp3` requests started getting `429 Too Many Requests` from irishtune.info well before page requests did — `/*.mp3` is also the one path explicitly called out in their `robots.txt` `Disallow` rules, so it's reasonable to assume audio is more closely watched/rate-limited than the rest of the site. 2000ms is a deliberately conservative starting point to let things cool down; tune it down only if it proves unnecessarily cautious in practice, and watch for 429s if you do.
 
-On the Cadence side, fetching audio is opt-in (off by default) for the same reason — most imports shouldn't touch `/audio/*` at all.
+On the client side, fetching audio should be opt-in (off by default) for the same reason — most imports shouldn't touch `/audio/*` at all.
 
 ## Running locally
 
