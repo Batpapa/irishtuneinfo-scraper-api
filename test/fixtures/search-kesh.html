@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>irishtune.info Tune Search and Finder - Irish Traditional Music Tune Index</title>
+	<link rel="stylesheet" href="1.css?v=20260603" title="style">
+    <style>
+TABLE#tips {
+    border-spacing: 0
+}
+TABLE#tips TR {
+    vertical-align: top
+}
+TABLE#tips TD {
+    padding: 5px 5px 0 0
+}
+.tipLabel {
+    background-color: #DDEEFF;
+    white-space: nowrap;
+    font-size: larger;
+    padding: 5px 1px;
+}
+.match {
+    background-color : #FAFA77;
+}
+.spacer {
+    margin-bottom: 3px;
+    width: 100%
+}
+.pop1 {
+    font-size: 88%;
+    padding: 2px;
+}
+.pop2 {
+    font-size: 90%;
+    padding: 4px;
+}
+.pop3 {
+    font-size: 92%;
+    padding: 6px;
+}
+.pop4 {
+    font-size: 93%;
+    padding: 7px;
+}
+.pop5 {
+    font-size: 93.5%;
+    padding: 8px;
+}
+.pop6 {
+    font-size: 94%;
+    padding: 8px;
+}
+.center {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center
+}
+TABLE#results {
+    width: 100%
+}
+TABLE#results TD, TABLE#results TH {
+    border-left: none;
+    border-right: none
+}
+COL#p {
+    width: 2em
+}
+COL#my {
+    width: 4em;
+    text-align: center
+}
+COL#r {
+    width: 3em
+}
+COL#m {
+    width: 5em
+}
+COL#i {
+    width: 12em
+}
+DIV.barContainer {
+    display: inline-block;
+    padding: 1px;
+    width: 2em;
+    height: 1.7em;
+    box-shadow: 0 0 0 1px rgb(0,152,0) inset;
+}
+DIV.barGraph {
+    position: absolute;
+    height: 1.7em;
+    background-color: rgb(0,152,0);
+}
+TD.pop, TH.pop {
+    padding: 5px 0;
+}
+TD.ti > A {
+    font-weight: bold;
+    text-decoration: underline
+}
+TD.ti .myText {
+    margin-top: .4em
+}
+TD.in {
+    padding-left: 20px;
+}
+/* When a row has an ITP player, widen the incipit cell to make room and
+   position it relative so the absolute-positioned .itp-wrap attaches here. */
+td.in:has(.itp-wrap) {position:relative; padding-left:40px}
+/* Search-result rows can stretch past 57 px when td.ti holds multi-line tune
+   names or member notes. The default .itp-wrap rule (top:50%; translateY(-50%))
+   would then drop the button below the top-aligned 57 px incipit image's
+   centre. Pin the button to image-relative top:11 px so the visible (0.6-scale)
+   centre sits at y≈29 — matching a 57 px image's centre (1 px padding + 57/2).
+   position:absolute and margin:0 still cascade from the base .itp-wrap rule. */
+td.in .itp-wrap {left:2px; top:11px; transform:none;}
+DIV.blankincipit {
+    height: 40px;
+    width: 100px;
+}
+IMG.ipng {
+    padding-left: 15px;
+    border: 0
+}
+DIV.miniheader {
+    display: none;
+    margin-left: 1px
+}
+
+@media screen and (max-width: 950px) {
+DIV#header {
+    display: none
+}
+THEAD {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+}
+DIV.miniheader {
+    display: block;
+    margin-top: -.5em
+}
+DIV.miniheader > .barContainer, DIV.miniheader .barGraph {
+    height: .7em;
+}
+TABLE#results, TABLE#results TBODY, TABLE#results TR {
+    display: block;
+}
+TABLE#results TD {
+    display: inline-block;
+    position: relative;
+    border: none
+}
+IMG.ipng {
+    max-width: 90%
+}
+TABLE#results TR {
+    border-bottom: 1px silver solid
+}
+TD.pop {
+    width: 2em;
+    padding-left: 1px;
+}
+TD.mode {
+    width: 5em
+}
+TD.ti, TD.ti .myText {
+    display: block;
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis
+}
+}
+/* ---------- Search Form  --------- */
+FORM#tune {
+    margin-top: 1ex;
+    margin-bottom: 0.5ex;
+    max-width: 415px;
+}
+DIV.searchform {
+    color : Black;
+    padding : 0.5em;
+    margin-left: 5px;
+}
+INPUT#term {
+    max-width: calc(100% - 27px);
+    margin: 0 auto .5em auto;
+    padding-right: 20px;
+}
+INPUT.submit {
+    margin-left: -20px;
+    height: 16px;
+    width: 18px;
+	padding: 0 0 3px 0;
+	background-image:url('/g/srch.gif');
+	border:none;
+	cursor: pointer;
+}
+FIELDSET {
+    border: 0;
+    margin: 0;
+    padding: 0.3em;
+    max-width: calc(100% - 10px);
+}
+FIELDSET#how {
+    background: #def;
+    margin-bottom: .5em;
+}
+FIELDSET#filters {
+    border: 0;
+    padding: 0;
+}
+.filters-open FIELDSET#filters {
+    padding: 0.3em;
+    background: #def;
+}
+.filter-group {
+    display: none;
+}
+.filters-open .filter-group {
+    display: block;
+    padding: 0.3em;
+}
+LEGEND, .filters-open LEGEND#search-filters-title {
+    background: white;
+    padding: 2px 6px;
+    border: thin solid gray;
+    border-radius: 2px;
+    width: auto;
+}
+LEGEND#search-filters-title {
+    color: blue;
+    text-decoration: underline;
+    cursor: pointer;
+    margin: 0;
+    padding: 3px 12px;
+    background: #def;
+    border: 0;
+    width: calc(99% - 15px);
+}
+FIELDSET#identifylink {
+    background: white;
+}
+
+@media screen and (min-width: 416px) and (max-height: 750px) {
+ DIV.howoption {
+display:inline-block
+}
+}
+
+@media screen and (max-width: 415px) {
+BODY {
+    margin: 0;
+}
+H1, H2, P, .logo {
+    margin-left: 1px;
+}
+TABLE#tips TD {
+    padding-left: 1px;
+}
+FORM#tune, DIV.searchform {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    background: #def;
+}
+FORM#tune {
+    margin: .5em 0 0
+}
+FIELDSET#filters, FIELDSET#how {
+    width: calc(100% - 10px);
+    border: 0;
+    margin: 0;
+}
+INPUT#term {
+    margin: 0 0 10px 0;
+}
+}
+</style>
+</head>
+
+<body>
+<div class="myheaderIn"><div class="barleft"><a href="/" class="logo" style="font-size:large;">irishtune.info</a></div><img src="/g/srch.gif" alt="" width="18" height="16"><a href="/search.php" class="topButton">Tune Search</a><div class="barrightOut"><a href="https://www.irishtune.info/my/login.php?from=%2Fsearch.php%3Flookfor%3Dwords%26term%3DKesh%26type%3Dany" id="login">Sign in or join</a> &nbsp;to see your: &nbsp; &nbsp; Home &nbsp; Identify &nbsp; Playlists &nbsp; Practice Machine &nbsp; Stats &nbsp; Friends &nbsp; Albums &nbsp; Preferences &nbsp; Sign out</div></div>
+
+<div id="header"><span style="float: right; text-align:right;">Start at <a href="/" class="logo">irishtune.info</a><br>
+  See a list of all the <a href="/faq/">Frequently Asked Questions</a>
+</span></div>
+<h1>Tune Search and Finder</h1>
+<div class="plea">Do you like <span class="logo" style="background-color:inherit;font-size:95%" >irishtune.info</span>? Please consider <a href="/faq/support.html">supporting it</a> in various ways. &nbsp; <a href="https://bsky.app/profile/www.irishtune.info"><img src="/g/bsky.svg" height="36" width="36" style="vertical-align:middle" alt="bluesky icon"></a> <a href="https://www.facebook.com/irishtune" title="Visit the irishtune.info Facebook Page"><img src="/g/f_logo.jpg" alt="Facebook icon" style="vertical-align:middle" height="22" width="22"></a> &nbsp; <div class="fb-like" style="vertical-align:middle" data-href="https://www.facebook.com/irishtune" data-width="40" data-layout="standard" data-action="like" data-show-faces="true" data-share="false">
+</div>
+<form action="https://www.paypal.com/cgi-bin/webscr" method="post" style="display:inline" >
+<input type="hidden" name="cmd" value="_s-xclick">
+<input type="hidden" name="hosted_button_id" value="J9GFJFYKVYJXG">
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donate_SM.gif" name="submit" alt="PayPal - The safer, easier way to pay online!" style="vertical-align:middle" height="21" width="74"></form> <span class="notmobile">(Paypal) or</span> <a href="https://revolut.me/irishtuneinfo">Revolut</a><span class="notmobile">(@irishtuneinfo)</span></div>	
+	<form action="search.php" method="get" name="tune" id="tune" onSubmit="return check()" >
+  <div class="searchform">
+	<fieldset id="how">
+	<legend>Search how?</legend>
+	<div class="howoption"><input type="radio" name="lookfor" value="words" accesskey="W" id="words" checked="checked" onClick="poptip()">
+	<label for="words">Words in title</label></div>
+	<div class="howoption"><input type="radio" name="lookfor" value="string" accesskey="F" id="string"  onClick="poptip()">
+	<label for="string">Exact fragment of title</label></div>
+	
+    </fieldset>
+	<label for="term" class="visually-hidden">Search for:</label><input type="text" name="term" size="40" maxlength="50" accesskey="B" id="term" value="Kesh"><input type="submit" class="submit" value="" aria-label="Search">
+	<fieldset id="filters"><legend id="search-filters-title">Filter by tune type</legend>
+    <div class="filter-group">
+	<input type="radio" name="type" value="any" id="tany" checked="checked"><label for="tany">all</label><br>
+	<input type="radio" name="type" value="reel" id="treel" ><label for="treel">reel, hornpipe, or similar</label><br>
+	<input type="radio" name="type" value="jig" id="tjig" ><label for="tjig">jig or slide</label><br>
+	<input type="radio" name="type" value="slow" id="tslow" ><label for="tslow">song, air, waltz or piece</label><br>
+	<input type="radio" name="type" value="other" id="tother" ><label for="tother">not reel or double jig</label>
+    </div>
+	  </fieldset>
+	    </div>
+</form>
+<p class="text center" id="resultcount"><b>11</b> distinct tunes match your search. Results are sorted with <a href="faq/technical.htm#wordsearch">best matches first</a>.
+</p><div class="miniheader data"><div class="barContainer"><div class="barGraph" style="width:2em"></div></div> = tune popularity</div>
+<table id="results" class="datatable">
+<col id="p">
+<col id="r"><col id="m"><col id="i"><col id="t">
+<thead><tr>
+<th scope="col" class="pop">Popu-<br>larity</th>
+<th scope="col"><a href="/rhythm/" target="_top" class="fine">Explanation</a><br>
+  Rhythm</th><th scope="col"><a href="faq/modes.htm" target="_top" class="fine">Explanation</a><br>
+  Key</th><th scope="col">Start of Tune</th><th scope="col"><a href="faq/method.htm#titles" target="_top" class="fine">Explanation</a><br>All titles in use for this tune (plus comments about the tune)</th></tr></thead><tbody>
+<tr><td class="pop"><div class="barContainer"><div class="barGraph" style="width:2em"></div></div></td><td><abbr title="Double jig">JigD</abbr></td><td class="mode">G&nbsp;Major</td><td class="in"><span class="itp-wrap"><button type="button" class="itp-btn" data-src="/album/BB+1/1_1.mp3" aria-label="Play: incipit of Kesh Jig"></button></span><a href="/tune/1022/" target="_top"><img src="/tune/1022/incipit.png" alt="1st 2 bars" class="ipng" height="57"></a></td>
+<td class="ti"><a href="/tune/1022/"><span class="match">Kesh</span> Jig, The</a>  / <span class="match">Kesh</span> Jig / The <span class="match">Kesh</span> / The Keash Jig / Keash Jig / Keash / The Kincora Jig / The Kincora / The Castle Jig / Little Boy Ted in the Hay / The Comely Maid / Kerrigan's / The Mountaineer's March (for 3rd figure of The West Kerry Set on JRSLCB 2; 2nd in set The <span class="match">Kesh</span> Jig on BowBros) (also in A or C or D) (compare The Mountaineers' March and The Spring Well included here from O'Neill books, compare mainly the 2nd part with the 2nd part of <span class="match">Kesh</span> #<a href='/tune/7119/'>7119</a>; compare 1st part with 1st part of Lark on the Strand #<a href='/tune/1093/'>1093</a>, with 1st part of Sean Coughlan's <span class="match">Kesh</span> #<a href='/tune/2554/'>2554</a>, with 1st part of Terry Lane's #<a href='/tune/6564/'>6564</a>, and with 2nd part of #<a href='/tune/3663/'>3663</a>)</td></tr>
+<tr><td class="pop"><div class="barContainer"><div class="barGraph" style="width:1.32em"></div></div></td><td><abbr title="Double jig">JigD</abbr></td><td class="mode">A&nbsp;Major</td><td class="in"><span class="itp-wrap"><button type="button" class="itp-btn" data-src="/album/BgCn/9_3.mp3" aria-label="Play: incipit of Sean Coghlan&#039;s Kesh [Sean Coughlan&#039;s Kesh]"></button></span><a href="/tune/2554/" target="_top"><img src="/tune/2554/incipit.png" alt="1st 2 bars" class="ipng" height="57" loading="lazy"></a></td>
+<td class="ti"><a href="/tune/2554/">Sean Coghlan's <span class="match">Kesh</span> [Sean Coughlan's <span class="match">Kesh</span>]</a>  (3rd in set Tomaisín a' Rí on BgCn; for 5th figure of Taille Mhara Jig Set on MISD 7) (compare 1st part with 1st part of <span class="match">Kesh</span> Jig #<a href='/tune/1022/'>1022</a>)</td></tr>
+<tr><td class="pop"><div class="barContainer"><div class="barGraph" style="width:1.86em"></div></div></td><td><abbr title="Double jig">JigD</abbr></td><td class="mode">G&nbsp;Major</td><td class="in"><span class="itp-wrap"><button type="button" class="itp-btn" data-src="/album/MC/1_6_1.mp3" aria-label="Play: incipit of Jackson&#039;s Jig"></button></span><a href="/tune/861/" target="_top"><img src="/tune/861/incipit.png" alt="1st 2 bars" class="ipng" height="57" loading="lazy"></a></td>
+<td class="ti"><a href="/tune/861/">Jackson's Jig</a>  / Jackson's /<span lang="ga"> Port Mhic Eoin </span>/ Jacksons / Hogan's Favorite / The Humours of <span class="match">Kesh</span> / Humours of <span class="match">Kesh</span> /<span lang="ga"> Pléaráca na Céise </span>/ The Merry Bonnaveen / The Tempest / Barron's / The Gudgeon of Maurice's Car (1st in set Jackson's on MC; 1st in set Jigs on 4MD 1; 1st in set Up Sligo on CLnn 1) (compare 1st part with 1st part of Kerfunken Jig #<a href='/tune/796/'>796</a> and 1st part of O'Neill's The Gudgeon of Maurice's Car, included here) (composed by Walker Jackson, possibly (often misspelled as Walter Jackson))</td></tr>
+<tr><td class="pop"><div class="barContainer"><div class="barGraph" style="width:0.96em"></div></div></td><td><abbr title="Double jig">JigD</abbr></td><td class="mode">D&nbsp;Major</td><td class="in"><span class="itp-wrap"><button type="button" class="itp-btn" data-src="/album/CGJS+1/15_1.mp3" aria-label="Play: incipit of Kesh"></button></span><a href="/tune/7119/" target="_top"><img src="/tune/7119/incipit.png" alt="1st 2 bars" class="ipng" height="57" loading="lazy"></a></td>
+<td class="ti"><a href="/tune/7119/"><span class="match">Kesh</span>, The</a>  (compare mainly the 2nd part with the 2nd part of <span class="match">Kesh</span> #<a href='/tune/1022/'>1022</a>)</td></tr>
+<tr><td class="pop"><div class="barContainer"><div class="barGraph" style="width:0.38em"></div></div></td><td><abbr title="Double jig">JigD</abbr></td><td class="mode">G&nbsp;Major</td><td class="in"><span class="itp-wrap"><button type="button" class="itp-btn" data-src="/album/LFinger/1_3.mp3" aria-label="Play: incipit of Terry Lane&#039;s"></button></span><a href="/tune/6564/" target="_top"><img src="/tune/6564/incipit.png" alt="1st 2 bars" class="ipng" height="57" loading="lazy"></a></td>
+<td class="ti"><a href="/tune/6564/">Terry Lane's</a>  (compare 1st part with 1st part of <span class="match">Kesh</span> #<a href='/tune/1022/'>1022</a> and Lark on the Strand #<a href='/tune/1093/'>1093</a>)</td></tr>
+<tr><td class="pop"><div class="barContainer"><div class="barGraph" style="width:0.72em"></div></div></td><td><abbr title="Double jig">JigD</abbr></td><td class="mode">A&nbsp;Mixolydian</td><td class="in"><span class="itp-wrap"><button type="button" class="itp-btn" data-src="/album/JKm/7_2.mp3" aria-label="Play: incipit of [untitled]"></button></span><a href="/tune/3663/" target="_top"><img src="/tune/3663/incipit.png" alt="1st 2 bars" class="ipng" height="57" loading="lazy"></a></td>
+<td class="ti"><a href="/tune/3663/">[untitled]</a>  (2nd in set Haley's Favourite on JKm) (1st part same as 1st part of Sweet Biddy Daly #<a href='/tune/815/'>815</a>; compare 2nd part with 1st part of <span class="match">Kesh</span> Jig #<a href='/tune/1022/'>1022</a>)</td></tr>
+<tr><td class="pop"><div class="barContainer"><div class="barGraph" style="width:1.92em"></div></div></td><td><abbr title="Double jig">JigD</abbr></td><td class="mode">E&nbsp;Minor</td><td class="in"><span class="itp-wrap"><button type="button" class="itp-btn" data-src="/album/MLIIA/21_3.mp3" aria-label="Play: incipit of Coleman&#039;s Cross"></button></span><a href="/tune/353/" target="_top"><img src="/tune/353/incipit.png" alt="1st 2 bars" class="ipng" height="57" loading="lazy"></a></td>
+<td class="ti"><a href="/tune/353/">Coleman's Cross</a>  / Road to <span class="match">Kesh</span> / Paddy Clancy's / Kimmel's No. 2 (3rd in set<span lang="fr"> La queue de l'hirondelle </span> on Barde 1; 3rd in set The Wandering Minstrel Medley on MLIIA) (also parts reversed, also as slide?)</td></tr>
+<tr><td class="pop"><div class="barContainer"><div class="barGraph" style="width:1.92em"></div></div></td><td><abbr title="Double jig">JigD</abbr></td><td class="mode">D&nbsp;Major</td><td class="in"><span class="itp-wrap"><button type="button" class="itp-btn" data-src="/album/Ch+3/1_1.mp3" aria-label="Play: incipit of Strike the Gay Harp"></button></span><a href="/tune/1845/" target="_top"><img src="/tune/1845/incipit.png" alt="1st 2 bars" class="ipng" height="57" loading="lazy"></a></td>
+<td class="ti"><a href="/tune/1845/">Strike the Gay Harp</a>  /<span lang="ga"> Tarraing ar an Chláirseach Mheidhreach / Meidhir na Cruite </span>/ Strike the Young Harp / The Night Dance / The Piper's Welcome (mislabeled as Willie Coleman's on ST BST reissue; 2nd in set Jigs on MCny 2; 3rd in set The <span class="match">Kesh</span> Jig on BowBros; 2nd in set Hawthorn Hedge on BrgGapMM) (also in G or C) (compare The Piper's Welcome included here in book 1001) (composed by Walker Jackson ca. 1774)</td></tr>
+<tr><td class="pop"><div class="barContainer"><div class="barGraph" style="width:1.9em"></div></div></td><td>Reel</td><td class="mode">A&nbsp;Dorian</td><td class="in"><span class="itp-wrap"><button type="button" class="itp-btn" data-src="/album/MBP/9_2.mp3" aria-label="Play: incipit of Eel in the Sink"></button></span><a href="/tune/573/" target="_top"><img src="/tune/573/incipit.png" alt="1st 2 bars" class="ipng" height="57" loading="lazy"></a></td>
+<td class="ti"><a href="/tune/573/">Eel in the Sink, The</a>  /<span lang="ga"> An Eascann sa Doirteal </span>/ Eel in the Sink / The Irishman's Blackthorn /<span lang="ga"> Maide Draighin an Éireannaigh </span>/ The Blackthorn / The Hills of <span class="match">Kesh</span> /<span lang="ga"> Cnocáin na Céise </span> (3rd in set Jenny Picking Cockles on Frwhlr) (also doubled, also in B, also in Mixolydian) (compare Irish Blackthorn #<a href='/tune/7771/'>7771</a> and John Naughton's #<a href='/tune/5670/'>5670</a> and Old Grey Gander #<a href='/tune/6364/'>6364</a>: and #<a href='/tune/2792/'>2792</a>; 2nd part same as 2nd part of Sheeren's Reel #<a href='/tune/6192/'>6192</a> and compare 2nd part of Swallow's Tail #<a href='/tune/1855/'>1855</a>)</td></tr>
+<tr><td class="pop"><div class="barContainer"><div class="barGraph" style="width:1.86em"></div></div></td><td><abbr title="Double jig">JigD</abbr></td><td class="mode">D&nbsp;Major</td><td class="in"><span class="itp-wrap"><button type="button" class="itp-btn" data-src="/album/JC/5_1.mp3" aria-label="Play: incipit of Queen of the Fair"></button></span><a href="/tune/1623/" target="_top"><img src="/tune/1623/incipit.png" alt="1st 2 bars" class="ipng" height="57" loading="lazy"></a></td>
+<td class="ti"><a href="/tune/1623/">Queen of the Fair, The</a>  / Queen of the Fair /<span lang="ga"> Ríon an Aonaigh / Banríon an Aonaigh </span>(1st in set Queen of the Fair on StWing 1; 2nd in set Jigs on the Green on KCB 5; 1st in set The <span class="match">Kesh</span> Jig on BowBros) (also without 3rd part) (compare, quite distantly, Moloney's Wife #<a href='/tune/317/'>317</a> and compare 1st part with 1st part of Paddy Doory's Fancy #<a href='/tune/4740/'>4740</a>) (composed by John McFadden)</td></tr>
+<tr><td class="pop"><div class="barContainer"><div class="barGraph" style="width:1.82em"></div></div></td><td><abbr title="Double jig">JigD</abbr></td><td class="mode">G&nbsp;Major</td><td class="in"><span class="itp-wrap"><button type="button" class="itp-btn" data-src="/album/BnkShn/2_2_1.mp3" aria-label="Play: incipit of Lark on the Strand"></button></span><a href="/tune/1093/" target="_top"><img src="/tune/1093/incipit.png" alt="1st 2 bars" class="ipng" height="57" loading="lazy"></a></td>
+<td class="ti"><a href="/tune/1093/">Lark on the Strand, The</a>  / The Lark in the Strand / Lark in the Strand /<span lang="ga"> An Fhuiseog ar an Trá </span>/ The Primrose Vale / The Primrose Glen /<span lang="ga"> Gleanntán na Samhaircíní </span>/ Wicky Sears (also in D or A) (compare 1st part with 1st part of <span class="match">Kesh</span> Jig #<a href='/tune/1022/'>1022</a> and with 1st part of Terry Lane's #<a href='/tune/6564/'>6564</a>)</td></tr>
+</tbody></table><p class="text center"><b>11</b> distinct tunes match your search.</p><h2 class="center"><a href="/search.php">New Search</a></h2>	<hr>
+	<p class="text"><b>Questions? Comments?</b> Please use the easy <a href="/feedback/form.php?page=Tune+Search+and+Finder+(Kesh)+(words)" target="_top">Feedback Form</a>. Thank you!<br>
+Start at <a href="/" target="_top"><span class="logo">irishtune.info</span></a></p>
+<script src="//ajax.aspnetcdn.com/ajax/jQuery/jquery-2.1.4.min.js"></script>
+<!--<script src="/js/search.js"></script>-->
+<script>$(document).ready((function(){$("#search-filters-title").on("click",(function(){$("FORM#tune").toggleClass("filters-open")})),$("#filters :radio").change((function(){$("FORM#tune").submit()})),$("#identifylink").on("click",(function(){window.location.href="/my/identify.php"})),$("#resultcount").animate({"font-size":"110%"},200,"swing",(function(){$("#resultcount").animate({"font-size":"100%"},600,"swing")}))})),window.popup=function(e){var t=document.getElementById(e),n=0;t.style.display="block";for(var o=t.parentNode;"object"==typeof o.offsetParent&&o.offsetParent!=document.body;)n+=(o=o.offsetParent).offsetTop;n+t.offsetHeight+5>getScreenBottomPos()?t.style.marginTop=-5-t.scrollHeight+"px":t.style.marginTop="1.4em",t.style.top="auto"},window.poptip=function(){document.tune.lookfor[0].checked?(document.getElementById("fragtip").className="data",document.getElementById("wordtip").className="pop1",setTimeout((function(){document.getElementById("wordtip").className="pop2"}),100),setTimeout((function(){document.getElementById("wordtip").className="pop3"}),200),setTimeout((function(){document.getElementById("wordtip").className="pop4"}),300),setTimeout((function(){document.getElementById("wordtip").className="pop5"}),400),setTimeout((function(){document.getElementById("wordtip").className="pop6"}),500)):(document.getElementById("wordtip").className="data",document.getElementById("fragtip").className="pop1",setTimeout((function(){document.getElementById("fragtip").className="pop2"}),100),setTimeout((function(){document.getElementById("fragtip").className="pop3"}),200),setTimeout((function(){document.getElementById("fragtip").className="pop4"}),300),setTimeout((function(){document.getElementById("fragtip").className="pop5"}),400),setTimeout((function(){document.getElementById("fragtip").className="pop6"}),500))},window.check=function(){var e=document.tune.term.value;if(e=e.replace(/\s+/g," "),document.tune.term.value=e,document.getElementById("string").checked){if(e.length>8)return document.tune.term.focus(),confirm("Alert: "+e+" may be too long.\nThis greatly increases the chance that spelling variations will hurt your search. Please click OK to search anyway, or CANCEL to try a shorter fragment.")}else if(document.getElementById("words").checked||document.getElementById("notes").checked){if(e.match(/^#?[0-9]{2,4}$/))return!0;for(var t,n=new Array("able","about","above","according","accordingly","across","actually","after","afterwards","again","against","ain't","allow","allows","almost","alone","along","already","also","although","always","among","amongst","another","anybody","anyhow","anyone","anything","anyway","anyways","anywhere","apart","appear","appreciate","appropriate","aren't","around","aside","asking","associated","available","away","awfully","became","because","become","becomes","becoming","been","before","beforehand","behind","being","believe","below","beside","besides","best","better","between","beyond","both","brief","c'mon","came","can't","cannot","cant","cause","causes","certain","certainly","changes","clearly","come","comes","concerning","consequently","consider","considering","contain","containing","contains","corresponding","could","couldn't","course","currently","definitely","described","despite","didn't","different","does","doesn't","doing","don't","done","down","downwards","during","each","eight","either","else","elsewhere","enough","entirely","especially","even","ever","every","everybody","everyone","everything","everywhere","exactly","example","except","fifth","first","five","followed","following","follows","former","formerly","forth","four","from","further","furthermore","gets","getting","given","gives","goes","going","gone","gotten","greetings","hadn't","happens","hardly","hasn't","have","haven't","having","he's","hello","help","hence","here","here's","hereafter","hereby","herein","hereupon","hers","herself","himself","hither","hopefully","howbeit","however","i'll","i've","ignored","immediate","inasmuch","indeed","indicate","indicated","indicates","inner","insofar","instead","into","inward","isn't","it'd","it'll","it's","itself","just","keep","keeps","kept","know","knows","known","last","lately","later","latter","latterly","least","less","lest","let's","like","liked","likely","little","look","looking","looks","mainly","many","maybe","mean","meanwhile","merely","might","more","moreover","most","mostly","much","must","myself","name","namely","near","nearly","necessary","need","needs","neither","never","nevertheless","new","next","nine","nobody","none","noone","normally","nothing","novel","nowhere","obviously","often","okay","once","ones","only","onto","other","others","otherwise","ought","ours","ourselves","outside","over","overall","particular","particularly","perhaps","placed","please","plus","possible","presumably","probably","provides","quite","rather","really","reasonably","regarding","regardless","regards","relatively","respectively","right","said","same","saying","says","second","secondly","seeing","seem","seemed","seeming","seems","seen","self","selves","sensible","sent","serious","seriously","seven","several","shall","should","shouldn't","since","some","somebody","somehow","someone","something","sometime","sometimes","somewhat","somewhere","soon","sorry","specified","specify","specifying","still","such","sure","take","taken","tell","tends","than","thank","thanks","thanx","that","that's","thats","their","theirs","them","themselves","then","thence","there","there's","thereafter","thereby","therefore","therein","theres","thereupon","these","they","they'd","they'll","they're","they've","think","third","this","thorough","thoroughly","those","though","three","through","throughout","thru","thus","together","took","toward","towards","tried","tries","truly","trying","twice","under","unfortunately","unless","unlikely","until","unto","upon","used","useful","uses","using","usually","value","various","very","want","wants","wasn't","we'd","we'll","we're","we've","welcome","well","went","were","weren't","what","what's","whatever","when","whence","whenever","where","where's","whereafter","whereas","whereby","wherein","whereupon","wherever","whether","which","while","whither","who's","whoever","whole","whom","whose","will","willing","wish","with","within","without","won't","wonder","would","wouldn't","you'd","you'll","you're","you've","your","yours","yourself","yourselves","zero"),o="",r=new RegExp("\\b("+n.join("|")+")\\b","gi");null!==(t=r.exec(e));){var s=t[1].toLowerCase();o+=(o.length>0?", ":"")+s}e=e.replace(r,"").replace(/\s+/g," ").trim(),document.tune.term.value=e;if(e.length>1&&!/[^\w\d'][\w\d']{4,}?(?=[^\w\d'])/i.test(e=" "+e+" "))return o.length>0?alert("Alert: to find tune titles containing these common words:\n-> "+o+" <-\nthen you need to use the Fragment search.\n\nAlso, all the other words you entered were less than 4 letters long. Consider using Fragment search for a word or phrase."):alert("Sorry, all the words you entered were less than 4 letters long. Consider using Fragment search for a word or phrase."),!1;o.length>0&&alert("Alert: to find tune titles containing these common words:\n-> "+o+" <-\nthen you need to use the Fragment search.")}else if(!document.tune.lookfor[4].checked)return alert('You didn\'t select a "Search How?" method.\nPlease choose either "Words" or "Exact fragment."'),!1;e=(e=document.tune.term.value).replace(/\s+/g," "),document.tune.term.value=e;var a=e.replace(/\s/g,"");return 0==a.length?(alert("Oops, you asked to search for nothing."),document.tune.term.focus(),!1):1!=a.length&&"the"!=a.toLowerCase()||(alert("Sorry, your search request is too general."),document.tune.term.focus(),!1)};</script>
+<script src="/js/itp-player.js"></script>
+</body>
+</html>
