@@ -44,8 +44,8 @@ Searches tunes by title.
 
 **Query parameters:**
 - `term` (required) — search text
-- `lookfor` — `words` (default) or `exact`
-- `type` — `any` (default), `reel`, `jigslide`, `song`, or `notreel`
+- `lookfor` — `words` (default), `string` or `notes`
+- `type` — `any` (default), `reel`, `jig`, `slow`, or `other`
 
 ```json
 {

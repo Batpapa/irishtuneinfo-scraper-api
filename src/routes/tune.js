@@ -10,7 +10,7 @@ tuneRouter.get("/:id", async (req, res) => {
   if (!Number.isInteger(id) || id <= 0) {
     return res.status(400).json({
       error: "InvalidId",
-      message: "L'ID de tune doit être un entier positif.",
+      message: "Tune ID must be a positive integer.",
     });
   }
 
@@ -21,11 +21,11 @@ tuneRouter.get("/:id", async (req, res) => {
     return res.json(tune);
   } catch (err) {
     if (err instanceof ParseError) {
-      // La structure de la page a probablement changé : on le signale
-      // explicitement plutôt que de renvoyer un JSON tronqué en silence.
+      // The page structure has probably changed: report it explicitly
+      // rather than silently returning a truncated JSON response.
       return res.status(502).json({
         error: "ParseError",
-        message: `Le parsing a échoué (champ: ${err.field}). La structure de la page source a peut-être changé.`,
+        message: `Parsing failed (field: ${err.field}). The source page structure may have changed.`,
         field: err.field,
       });
     }
@@ -37,7 +37,7 @@ tuneRouter.get("/:id", async (req, res) => {
     }
     return res.status(500).json({
       error: "InternalError",
-      message: "Erreur inattendue.",
+      message: "Unexpected error.",
     });
   }
 });

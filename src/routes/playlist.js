@@ -12,7 +12,7 @@ playlistRouter.get("/:username", async (req, res) => {
   if (!USERNAME_RE.test(username)) {
     return res.status(400).json({
       error: "InvalidUsername",
-      message: "Le nom d'utilisateur ne doit contenir que lettres, chiffres, '_' et '-'.",
+      message: "Username may only contain letters, digits, '_' and '-'.",
     });
   }
 
@@ -31,7 +31,7 @@ playlistRouter.get("/:username", async (req, res) => {
     if (err instanceof ParseError) {
       return res.status(502).json({
         error: "ParseError",
-        message: `Le parsing a échoué (champ: ${err.field}). La structure de la page source a peut-être changé.`,
+        message: `Parsing failed (field: ${err.field}). The source page structure may have changed.`,
         field: err.field,
       });
     }
@@ -43,7 +43,7 @@ playlistRouter.get("/:username", async (req, res) => {
     }
     return res.status(500).json({
       error: "InternalError",
-      message: "Erreur inattendue.",
+      message: "Unexpected error.",
     });
   }
 });

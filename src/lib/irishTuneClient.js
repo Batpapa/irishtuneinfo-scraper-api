@@ -2,23 +2,22 @@ import axios from "axios";
 
 const BASE_URL = "https://www.irishtune.info";
 
-// User-Agent identifiable : un site qui scrape sans se cacher se fait
-// bien moins vite bannir qu'un user-agent de navigateur usurpé, et c'est
-// la moindre des choses vis-à-vis d'un site tenu par une seule personne.
+// Identifiable User-Agent: a scraper that does not hide itself is far less
+// likely to get banned than one spoofing a browser UA. It is also the
+// least we can do toward a site maintained by a single person.
 const USER_AGENT =
-  "TuneScraperAPI/0.1 (+contact: your-email@example.com; usage personnel, faible volume)";
+  "TuneScraperAPI/0.1 (+contact: your-email@example.com; personal use, low volume)";
 
-// Pool de requêtes à concurrence réglable : au plus CONCURRENCY requêtes
-// en vol simultanément, chacune espacée d'au moins MIN_DELAY_MS par rapport
-// au lancement de la précédente. Avec CONCURRENCY=1 ça reproduit le throttle
-// séquentiel d'origine (une requête à la fois).
+// Request pool with configurable concurrency: at most CONCURRENCY requests
+// in flight at the same time, each spaced by at least MIN_DELAY_MS from the
+// previous launch time. With CONCURRENCY=1, this reproduces the original
+// sequential throttling (one request at a time).
 //
-// CONCURRENCY=1 pour l'instant : pas activé tant qu'un vrai besoin de
-// vitesse ne se présente pas (ex: import d'une grosse playlist). Passer
-// cette valeur à 3-4 reste largement plus respectueux du site qu'un retrait
-// pur et simple du throttling — irishtune.info est maintenu par une seule
-// personne, et une rafale totale sur des centaines de tunes ressemblerait
-// à une attaque depuis leur serveur.
+// CONCURRENCY=1 for now: not enabled until there is a real need for speed
+// (e.g. importing a large playlist). Increasing this value to 3–4 is still
+// far more respectful than removing throttling entirely — irishtune.info
+// is maintained by a single person, and blasting hundreds of requests would
+// look like an attack on their server.
 const CONCURRENCY = 1;
 const MIN_DELAY_MS = 200;
 
@@ -33,7 +32,8 @@ function runNext() {
   const wait = Math.max(0, MIN_DELAY_MS - elapsed);
 
   setTimeout(() => {
-    if (activeCount >= CONCURRENCY) return; // une autre slot a pu se libérer entre-temps
+    if (activeCount >= CONCURRENCY) return; // another slot may have been freed meanwhile
+
     const next = waiters.shift();
     if (!next) return;
 
@@ -48,7 +48,7 @@ function runNext() {
         runNext();
       });
 
-    // Une slot peut encore être libre : tenter de lancer la suivante aussi.
+    // A slot may still be free: try scheduling the next one too.
     runNext();
   }, wait);
 }
@@ -67,8 +67,8 @@ const client = axios.create({
 });
 
 /**
- * Récupère le HTML brut d'une page du site, throttlé.
- * @param {string} path - chemin relatif, ex: "/tune/1884/"
+ * Fetch raw HTML of a page, with throttling applied.
+ * @param {string} path - relative path, e.g. "/tune/1884/"
  * @returns {Promise<string>} HTML
  */
 export async function fetchPage(path) {
@@ -79,12 +79,12 @@ export async function fetchPage(path) {
     } catch (err) {
       if (err.response) {
         throw new UpstreamError(
-          `irishtune.info a répondu ${err.response.status} pour ${path}`,
+          `irishtune.info responded with ${err.response.status} for ${path}`,
           err.response.status
         );
       }
       throw new UpstreamError(
-        `Échec réseau en contactant irishtune.info (${err.message})`,
+        `Network failure while contacting irishtune.info (${err.message})`,
         502
       );
     }

@@ -15,9 +15,9 @@ app.use("/playlist", playlistRouter);
 app.use("/search", searchRouter);
 
 app.use((_req, res) => {
-  res.status(404).json({ error: "NotFound", message: "Route inconnue." });
+  res.status(404).json({ error: "NotFound", message: "Unknown route." });
 });
 
 app.listen(PORT, () => {
-  console.log(`tune-scraper-api écoute sur http://localhost:${PORT}`);
+  console.log(`tune-scraper-api listening on http://localhost:${PORT}`);
 });

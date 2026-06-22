@@ -5,12 +5,13 @@ import { ParseError } from "../lib/parseTunePage.js";
 
 export const searchRouter = Router();
 
-// "words" = chaque mot peut apparaître n'importe où dans un des titres
-// "exact"  = fragment exact de titre
-const VALID_LOOKFOR = new Set(["words", "exact"]);
+// "words"  = each word may appear anywhere in one of the titles
+// "string" = exact title fragment
+// "notes"  = each word may appear anywhere in my notes
+const VALID_LOOKFOR = new Set(["words", "string", "notes"]);
 
-// Filtre par type de rythme, valeurs vues sur le site
-const VALID_TYPE = new Set(["any", "reel", "jigslide", "song", "notreel"]);
+// Tune type filter, values observed on the source site
+const VALID_TYPE = new Set(["any", "reel", "jig", "slow", "other"]);
 
 searchRouter.get("/", async (req, res) => {
   const term = (req.query.term || "").toString().trim();
@@ -20,19 +21,19 @@ searchRouter.get("/", async (req, res) => {
   if (!term) {
     return res.status(400).json({
       error: "InvalidQuery",
-      message: "Le paramètre 'term' est requis (le nom ou fragment de tune à chercher).",
+      message: "The 'term' parameter is required (the tune name or title fragment to search for).",
     });
   }
   if (!VALID_LOOKFOR.has(lookfor)) {
     return res.status(400).json({
       error: "InvalidQuery",
-      message: `'lookfor' doit être l'un de: ${[...VALID_LOOKFOR].join(", ")}`,
+      message: `'lookfor' must be one of: ${[...VALID_LOOKFOR].join(", ")}`,
     });
   }
   if (!VALID_TYPE.has(type)) {
     return res.status(400).json({
       error: "InvalidQuery",
-      message: `'type' doit être l'un de: ${[...VALID_TYPE].join(", ")}`,
+      message: `'type' must be one of: ${[...VALID_TYPE].join(", ")}`,
     });
   }
 
@@ -46,7 +47,7 @@ searchRouter.get("/", async (req, res) => {
     if (err instanceof ParseError) {
       return res.status(502).json({
         error: "ParseError",
-        message: `Le parsing a échoué (champ: ${err.field}). La structure de la page source a peut-être changé.`,
+        message: `Parsing failed (field: ${err.field}). The source page structure may have changed.`,
         field: err.field,
       });
     }
@@ -58,7 +59,7 @@ searchRouter.get("/", async (req, res) => {
     }
     return res.status(500).json({
       error: "InternalError",
-      message: "Erreur inattendue.",
+      message: "Unexpected error.",
     });
   }
 });

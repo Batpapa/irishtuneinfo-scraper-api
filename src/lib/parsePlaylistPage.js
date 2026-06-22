@@ -1,74 +1,78 @@
 import * as cheerio from "cheerio";
 
 /**
- * Erreur levée quand l'utilisateur n'a pas de playlist publique — distincte
- * d'une playlist vide, qui est un résultat légitime (voir fixture
- * playlist-batpapa-empty.html).
+ * Error thrown when the user has no public playlist — distinct from an empty
+ * playlist, which is a valid result (see fixture playlist-batpapa-empty.html).
  *
- * irishtune.info renvoie EXACTEMENT le même message générique pour un
- * utilisateur inexistant (fixture playlist-not-existing.html) et pour un
- * utilisateur existant dont la playlist est privée (fixture
- * playlist-batpapa-private.html) — confirmé en comparant les deux fixtures
- * caractère pour caractère, identiques à part le username. Le site ne
- * distingue pas ces deux cas (probablement pour ne pas révéler si un
- * compte existe), donc on ne peut pas non plus les distinguer ici.
+ * irishtune.info returns EXACTLY the same generic message for a non-existing
+ * user (fixture playlist-not-existing.html) and for an existing user whose
+ * playlist is private (fixture playlist-batpapa-private.html) — confirmed by
+ * comparing both fixtures character by character, identical except for the
+ * username. The site does not distinguish between these two cases (likely to
+ * avoid revealing whether an account exists), so we cannot distinguish them
+ * here either.
  */
 export class PlaylistNotFoundError extends Error {
   constructor(username) {
-    super(`"${username}" n'a pas de playlist publique (utilisateur inexistant ou playlist privée — irishtune.info ne fait pas la distinction).`);
+    super(
+      `"${username}" has no public playlist (user does not exist or playlist is private — irishtune.info does not distinguish between the two).`
+    );
     this.name = "PlaylistNotFoundError";
     this.username = username;
   }
 }
 
 /**
- * Parse une page de playlist publique (/public/playlist/:username/).
+ * Parse a public playlist page (/public/playlist/:username/).
  *
- * Structure réelle observée :
- * - <h1>Current Playlist of\n{username}</h1>  → pas de "nom" de playlist, juste le username
- * - Playlist non vide : <table class="datatable"> avec <thead> : Rhythm | Title | Key | First 2 bars | Tune Info
- *   Le lien vers /tune/:id/ est dans la DERNIÈRE colonne ("Tune Info"), pas sur le titre.
- *   Le titre lui-même est du texte brut dans la colonne "Title".
- * - Playlist vide (utilisateur existant, 0 tunes) : PAS de table du tout
- *   dans le HTML, mais une page normale (header/footer du site présents),
- *   message "There are no tunes in this playlist yet." (fixture
- *   playlist-batpapa-empty.html). On se base sur l'absence de table plutôt
- *   que sur ce texte précis : le texte peut changer de formulation sans
- *   rien changer à la structure, alors que "pas de table" est le signal
- *   qui compte vraiment pour le parsing.
- * - Utilisateur inexistant / playlist non publique : page radicalement
- *   différente, juste "Sorry, {username} has not made any playlists
- *   public." sans le moindre header/footer du site (fixture
- *   playlist-not-existing.html). Ce texte précis est utilisé ici (et
- *   seulement ici) car c'est le seul signal disponible pour distinguer ce
- *   cas d'une vraie playlist vide — sans lui, les deux seraient
- *   indiscernables puisqu'aucun des deux n'a de table.
+ * Observed structure:
+ * - <h1>Current Playlist of\n{username}</h1> → no playlist "name", only username
+ * - Non-empty playlist: <table class="datatable"> with <thead>:
+ *   Rhythm | Title | Key | First 2 bars | Tune Info
+ *   The link to /tune/:id/ is in the LAST column ("Tune Info"), not on the title.
+ *   The title itself is plain text in the "Title" column.
+ * - Empty playlist (existing user, 0 tunes): NO table at all in the HTML,
+ *   but a normal page (site header/footer present), with message
+ *   "There are no tunes in this playlist yet." (fixture playlist-batpapa-empty.html).
+ *   We rely on absence of a table rather than this exact text: the text may
+ *   change wording without affecting structure, whereas "no table" is the
+ *   actual signal that matters for parsing.
+ * - Non-existing user / non-public playlist: radically different page with
+ *   only "Sorry, {username} has not made any playlists public." and no
+ *   site header/footer at all (fixture playlist-not-existing.html). This
+ *   exact text is used here (and only here) because it is the only available
+ *   signal to distinguish this case from a real empty playlist — without it,
+ *   both cases would be indistinguishable since neither contains a table.
  *
- * Toutes les tunes d'une playlist non vide sont affichées d'un coup dans la
- * table (pas de pagination observée), donc pas besoin de comparer un compte
- * annoncé par la page à un compte réellement extrait.
+ * All tunes in a non-empty playlist are rendered at once (no pagination
+ * observed), so there is no need to compare an announced count with the
+ * extracted count.
  *
  * @param {string} html
  * @param {string} username
- * @throws {PlaylistNotFoundError} si l'utilisateur n'a pas de playlist publique
+ * @throws {PlaylistNotFoundError} if the user has no public playlist
  */
 export function parsePlaylistPage(html, username) {
   const $ = cheerio.load(html);
 
   const notFound = $("*")
-    .filter((_, el) => /has not made any playlists public/i.test($(el).text()))
+    .filter((_, el) =>
+      /has not made any playlists public/i.test($(el).text())
+    )
     .first().length > 0;
 
   if (notFound) {
     throw new PlaylistNotFoundError(username);
   }
 
-  // Table des tunes : table.datatable avec en-têtes Rhythm/Title/Key/.../Tune Info
+  // Tunes table: table.datatable with headers Rhythm/Title/Key/.../Tune Info
   let table = $("table.datatable").first();
+
   if (table.length === 0) {
-    // Fallback : table contenant le plus de liens /tune/:id/
+    // Fallback: table with the highest number of /tune/:id/ links
     let bestTable = null;
     let bestCount = 0;
+
     $("table").each((_, t) => {
       const linkCount = $(t).find("a[href*='/tune/']").length;
       if (linkCount > bestCount) {
@@ -76,18 +80,19 @@ export function parsePlaylistPage(html, username) {
         bestTable = t;
       }
     });
+
     if (bestTable) table = $(bestTable);
   }
 
-  // Pas de table (et pas "not found" détecté ci-dessus) = playlist vide,
-  // résultat légitime.
+  // No table (and not "not found") = empty playlist, valid result.
   if (table.length === 0) {
     return { username, tunes: [] };
   }
 
-  // Index des colonnes à partir de l'en-tête, pour ne pas dépendre d'un ordre fixe
+  // Column index mapping from header row (avoid relying on fixed ordering)
   const headerCells = table
-    .find("thead tr th, tr").first()
+    .find("thead tr th, tr")
+    .first()
     .find("th, td")
     .map((_, el) => $(el).text().trim())
     .get();
@@ -95,17 +100,20 @@ export function parsePlaylistPage(html, username) {
   const titleColIdx = headerCells.findIndex((h) => /^title$/i.test(h));
 
   const tunes = [];
+
   table.find("tbody tr").each((_, row) => {
     const cells = $(row).find("td");
     const link = $(row).find("a[href*='/tune/']").first();
+
     if (!link.length) return;
 
     const href = link.attr("href") || "";
     const idMatch = href.match(/\/tune\/(\d+)/);
+
     if (!idMatch) return;
 
-    // Le titre vient de la colonne "Title" repérée via l'en-tête, pas du lien
-    // (le lien pointe vers "Tune Info", pas vers le nom de la tune).
+    // Title comes from the "Title" column, not from the link
+    // (the link points to "Tune Info", not the tune name).
     const title =
       titleColIdx >= 0 && cells[titleColIdx]
         ? $(cells[titleColIdx]).text().trim()
