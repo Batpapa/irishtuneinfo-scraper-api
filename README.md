@@ -116,8 +116,11 @@ On Windows PowerShell, `curl` is aliased to `Invoke-WebRequest`, which has diffe
 
 This is a standard Node/Express app — it deploys cleanly to any Node-friendly host (Render, Railway, Fly.io, a VPS, etc.). It reads the port from `process.env.PORT`, so no extra configuration is needed beyond a build command (`npm install`) and a start command (`npm start`).
 
+## robots.txt compliance
+
+Checked against irishtune.info's `robots.txt`: none of the paths used by this API (`/tune/`, `/search.php`, `/public/playlist/`) are disallowed. The only relevant `Disallow` rule blocks crawling `*.mp3` files directly, which this API doesn't do — it returns mp3 URLs for the client to use, it never fetches the audio itself. The site's Content Signal directives (`ai-train=no, search=yes, ai-input=yes`) govern AI model training and retrieval use cases, not applicable to a scraping API like this one.
+
 ## Known limitations
 
 - Test fixtures cover one representative case per scenario, not every possible page variation. The parsers aim to fail safe (returning an empty result rather than crashing) when they encounter unexpected structure, but full coverage isn't guaranteed.
-- `robots.txt` has not been checked against current scraping volume — review `https://www.irishtune.info/robots.txt` before heavy usage.
 - The `lookfor=exact` search parameter is implemented but not extensively tested.
