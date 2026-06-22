@@ -4,54 +4,29 @@ import { ParseError } from "./parseTunePage.js";
 /**
  * Parse a search results page (search.php?lookfor=words&term=...&type=...)
  * @param {string} html
- * @returns {{count: number, results: Array<{id: number, title: string, rhythm: string, key: string, allTitles: string}>}}
+ * @returns {{results: Array<{id: number, title: string, rhythm: string, key: string, allTitles: string}>}}
  */
 export function parseSearchResults(html) {
   const $ = cheerio.load(html);
-
-  const countText =
-    $("#resultcount").text() ||
-    $("*")
-      .filter((_, el) =>
-        /distinct tunes? match your search/i.test($(el).text())
-      )
-      .first()
-      .text();
-
-  const countMatch = countText.match(/(\d+)\s+distinct tunes?/i);
-
-  if (!countMatch) {
-    throw new ParseError(
-      "Result counter not found — the page does not look like a search results page.",
-      "count"
-    );
+  
+  const results = [];
+  
+  // Results table: id="results" on the real site, columns:
+  // Popularity | Rhythm | Key | Start of Tune | All titles in use.
+  let resultsTable = $("table#results").first();
+  
+  if (resultsTable.length === 0) {
+    $("table").each((_, table) => {
+      const headerText = $(table).find("tr").first().text();
+      if (/Rhythm/i.test(headerText) && /titles in use/i.test(headerText)) {
+        resultsTable = $(table);
+        return false;
+      }
+    });
   }
 
-  const count = Number.parseInt(countMatch[1], 10);
-  const results = [];
-
-  if (count > 0) {
-    // Results table: id="results" on the real site, columns:
-    // Popularity | Rhythm | Key | Start of Tune | All titles in use.
-    let resultsTable = $("table#results").first();
-
-    if (resultsTable.length === 0) {
-      $("table").each((_, table) => {
-        const headerText = $(table).find("tr").first().text();
-        if (/Rhythm/i.test(headerText) && /titles in use/i.test(headerText)) {
-          resultsTable = $(table);
-          return false;
-        }
-      });
-    }
-
-    if (resultsTable.length === 0) {
-      throw new ParseError(
-        "Results table not found even though the counter indicates results exist.",
-        "resultsTable"
-      );
-    }
-
+  if (resultsTable.length > 0)
+  {
     resultsTable.find("tbody tr").each((_, row) => {
       const cells = $(row).find("td, th");
       if (cells.length < 5) return;
@@ -92,7 +67,7 @@ export function parseSearchResults(html) {
     });
   }
 
-  return { count, results };
+  return { results };
 }
 
 function normalizeSpaces(str) {

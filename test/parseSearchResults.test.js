@@ -7,11 +7,10 @@ import { ParseError } from "../src/lib/parseTunePage.js";
 
 const FIXTURE = path.join(import.meta.dirname, "fixtures/search-kesh.html");
 
-test("parseSearchResults extrait count + résultats (fixture réel, recherche 'Kesh')", async () => {
+test("parseSearchResults extrait résultats (fixture réel, recherche 'Kesh')", async () => {
   const html = await readFile(FIXTURE, "utf-8");
-  const { count, results } = parseSearchResults(html);
+  const { results } = parseSearchResults(html);
 
-  assert.equal(count, 11);
   assert.equal(results.length, 11);
 
   const first = results[0];

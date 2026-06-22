@@ -49,7 +49,6 @@ Searches tunes by title.
 
 ```json
 {
-  "count": 11,
   "results": [
     {
       "id": 1022,
