@@ -1,10 +1,10 @@
 # tune-scraper-api
 
-A small Node/Express API that fetches and parses pages from [irishtune.info](https://www.irishtune.info), returning clean JSON instead of raw HTML.
+A small Node/Express API that fetches and parses pages from [irishtune.info](https://www.irishtune.info), returning clean JSON instead of raw HTML — plus one endpoint that relays an audio file's raw bytes.
 
 ## Why
 
-irishtune.info doesn't offer a public API, and its pages don't allow cross-origin requests from a browser. This service sits between your application and the site: it fetches the page server-side, parses out the relevant data, and returns structured JSON your app can consume directly.
+irishtune.info doesn't offer a public API, and its pages (and audio files) don't allow cross-origin requests from a browser. This service sits between your application and the site: it fetches pages and files server-side, parses out the relevant data, and returns structured JSON (or, for `/audio/*`, the raw file) your app can consume directly.
 
 ## Endpoints
 
@@ -74,12 +74,33 @@ Fetches a user's public playlist.
 
 An empty `tunes` array is returned for a playlist with no tunes. If the user doesn't exist or hasn't made any playlist public, the API returns a `404` — irishtune.info itself doesn't distinguish between these two cases, so neither can this API.
 
+### `GET /audio/*`
+
+Fetches an audio file from irishtune.info and relays its raw bytes — the only endpoint that returns binary instead of JSON.
+
+The path is the part of a `featuredAudioUrl` or `discography[].audioUrl` between `/album/` and the `.mp3` extension. For example, given:
+
+```
+https://www.irishtune.info/album/MC/2_19_2.mp3
+```
+
+request:
+
+```
+GET /audio/MC/2_19_2
+```
+
+which fetches `https://www.irishtune.info/album/MC/2_19_2.mp3` server-side and relays it with the upstream `Content-Type` (normally `audio/mpeg`).
+
+The path may only contain letters, digits, `_`, `+`, `-`, and `/` between segments — no extension and no `..`. The server always appends `.mp3` and always fetches under `/album/`, so a request can't reach any other path or domain. The upstream response is also checked to actually be an audio file before being relayed; anything else (e.g. an error page at a path that doesn't exist) is rejected.
+
 ## Error responses
 
 | Error | Status | Meaning |
 |---|---|---|
-| `InvalidId` / `InvalidQuery` / `InvalidUsername` | 400 | Bad input |
+| `InvalidId` / `InvalidQuery` / `InvalidUsername` / `InvalidPath` | 400 | Bad input |
 | `PlaylistNotFound` | 404 | No public playlist for that username |
+| `NotAudio` | 404 | The resolved path didn't return an audio file |
 | `UpstreamError` | 502 / upstream status | irishtune.info unreachable or returned an error |
 | `ParseError` | 502 | Page structure didn't match what the parser expects (the site may have changed) |
 
@@ -107,6 +128,7 @@ npm run dev
 curl http://localhost:3000/tune/1884
 curl "http://localhost:3000/search?term=Kesh"
 curl http://localhost:3000/playlist/batpapa
+curl http://localhost:3000/audio/MC/2_19_2 -o tune.mp3
 ```
 
 On Windows PowerShell, `curl` is aliased to `Invoke-WebRequest`, which has different syntax. Use `curl.exe` explicitly, or `Invoke-RestMethod` for JSON-friendly output.
@@ -117,7 +139,9 @@ This is a standard Node/Express app — it deploys cleanly to any Node-friendly 
 
 ## robots.txt compliance
 
-Checked against irishtune.info's `robots.txt`: none of the paths used by this API (`/tune/`, `/search.php`, `/public/playlist/`) are disallowed. The only relevant `Disallow` rule blocks crawling `*.mp3` files directly, which this API doesn't do — it returns mp3 URLs for the client to use, it never fetches the audio itself. The site's Content Signal directives (`ai-train=no, search=yes, ai-input=yes`) govern AI model training and retrieval use cases, not applicable to a scraping API like this one.
+Checked against irishtune.info's `robots.txt`: none of the paths used by this API (`/tune/`, `/search.php`, `/public/playlist/`, `/album/*.mp3`) are disallowed for the way this API actually uses them. The site's Content Signal directives (`ai-train=no, search=yes, ai-input=yes`) govern AI model training and retrieval use cases, not applicable to a scraping API like this one.
+
+The one relevant `Disallow` rule blocks crawling `*.mp3` files. `robots.txt` rules are aimed at automated crawlers indexing the site in bulk — not at a single file fetched on demand in response to one explicit user action (importing one tune's reference recording), which is what `/audio/*` does. It never enumerates or bulk-downloads audio; each request fetches exactly one file the caller already knows the path to (from a `featuredAudioUrl` or `discography[].audioUrl` returned by `/tune/:id`), and it's throttled the same as every other route.
 
 ## Known limitations
 

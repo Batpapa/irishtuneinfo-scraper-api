@@ -91,6 +91,34 @@ export async function fetchPage(path) {
   });
 }
 
+/**
+ * Fetch a binary resource (e.g. an mp3 file), with the same throttling as fetchPage.
+ * @param {string} path - relative path, e.g. "/album/MC/2_19_2.mp3"
+ * @returns {Promise<{ data: Buffer, contentType: string }>}
+ */
+export async function fetchBinary(path) {
+  return throttle(async () => {
+    try {
+      const res = await client.get(path, { responseType: "arraybuffer" });
+      return {
+        data: res.data,
+        contentType: res.headers["content-type"] ?? "application/octet-stream",
+      };
+    } catch (err) {
+      if (err.response) {
+        throw new UpstreamError(
+          `irishtune.info responded with ${err.response.status} for ${path}`,
+          err.response.status
+        );
+      }
+      throw new UpstreamError(
+        `Network failure while contacting irishtune.info (${err.message})`,
+        502
+      );
+    }
+  });
+}
+
 export class UpstreamError extends Error {
   constructor(message, status = 502) {
     super(message);
