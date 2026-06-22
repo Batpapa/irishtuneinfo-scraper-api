@@ -1,10 +1,13 @@
 import express from "express";
+import cors from "cors";
 import { tuneRouter } from "./routes/tune.js";
 import { playlistRouter } from "./routes/playlist.js";
 import { searchRouter } from "./routes/search.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+app.use(cors());
 
 app.use(express.json());
 
