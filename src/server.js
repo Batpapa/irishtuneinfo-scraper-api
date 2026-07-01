@@ -4,6 +4,7 @@ import { tuneRouter } from "./routes/tune.js";
 import { playlistRouter } from "./routes/playlist.js";
 import { searchRouter } from "./routes/search.js";
 import { audioRouter } from "./routes/audio.js";
+import { shareRouter } from "./routes/share.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +19,7 @@ app.use("/tune", tuneRouter);
 app.use("/playlist", playlistRouter);
 app.use("/search", searchRouter);
 app.use("/audio", audioRouter);
+app.use("/share", shareRouter);
 
 app.use((_req, res) => {
   res.status(404).json({ error: "NotFound", message: "Unknown route." });
