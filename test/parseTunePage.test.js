@@ -57,3 +57,27 @@ test("parseTunePage lève ParseError sur un HTML qui ne ressemble pas à une pag
   const garbage = "<html><body><p>pas une page tune</p></body></html>";
   assert.throws(() => parseTunePage(garbage, 1), ParseError);
 });
+
+const FIXTURE_OTHER = path.join(import.meta.dirname, "fixtures/tune-2294.html");
+
+test("parseTunePage gère une tune de rythme \"Other\" (table réduite, sans Bars/structure/Mode)", async (t) => {
+  let html;
+  try {
+    html = await readFile(FIXTURE_OTHER, "utf-8");
+  } catch {
+    t.skip(
+      `Fixture manquant: ${FIXTURE_OTHER}. Lance d'abord:\n` +
+        `  curl -s "https://www.irishtune.info/tune/2294/" -o ${FIXTURE_OTHER}`
+    );
+    return;
+  }
+
+  const tune = parseTunePage(html, 2294);
+
+  assert.equal(tune.id, 2294);
+  assert.equal(tune.title, "Itzikel");
+  assert.equal(tune.rhythm, "Other");
+  assert.equal(tune.bars, null);
+  assert.equal(tune.structure, null);
+  assert.equal(tune.mode, null);
+});

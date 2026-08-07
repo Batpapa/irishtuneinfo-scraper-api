@@ -25,3 +25,18 @@ test("parseSearchResults lève ParseError sur du HTML qui ne ressemble pas à un
   const garbage = "<html><body><p>rien à voir</p></body></html>";
   assert.throws(() => parseSearchResults(garbage), ParseError);
 });
+
+const FIXTURE_NO_RESULTS = path.join(import.meta.dirname, "fixtures/search-no-results.html");
+
+test("parseSearchResults renvoie un tableau vide (sans lever) pour une vraie recherche sans résultat", async (t) => {
+  let html;
+  try {
+    html = await readFile(FIXTURE_NO_RESULTS, "utf-8");
+  } catch {
+    t.skip(`Fixture manquant: ${FIXTURE_NO_RESULTS}`);
+    return;
+  }
+
+  const { results } = parseSearchResults(html);
+  assert.deepEqual(results, []);
+});

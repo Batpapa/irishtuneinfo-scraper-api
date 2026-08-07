@@ -25,6 +25,28 @@ export function parseSearchResults(html) {
     });
   }
 
+  if (resultsTable.length === 0) {
+    // No results table can mean two very different things: a genuine "nothing
+    // matched" search (the site still renders its own feedback paragraph in
+    // that case — worded differently per search mode, e.g. "No tune titles
+    // contain the word '...'." for word search vs "...can not be found in any
+    // tune titles." for fragment search, but both mention "tune titles"), or
+    // the page structure has changed in a way this parser doesn't recognize.
+    // Only the second case should fail loudly — otherwise every legitimate
+    // zero-match search would incorrectly report a ParseError.
+    const hasNoMatchMessage = $("*").filter((_, el) => {
+      const ownText = $(el).clone().children().remove().end().text();
+      return /tune titles/i.test(ownText);
+    }).length > 0;
+
+    if (!hasNoMatchMessage) {
+      throw new ParseError(
+        "Results table not found, and no recognizable \"no results\" message either",
+        "searchResults"
+      );
+    }
+  }
+
   if (resultsTable.length > 0)
   {
     resultsTable.find("tbody tr").each((_, row) => {

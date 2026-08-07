@@ -96,16 +96,32 @@ function parseFeaturedAudio($) {
 function parseInfoTable($) {
   // "Rhythm | Bars | 8-bar phrase structure | Mode" table — some pages label the
   // first column "Type" instead of "Rhythm" (observed on a subset of tune pages).
-  // Find the header row and the data row immediately following it.
+  // Tunes whose rhythm is "Other" (e.g. tune 2294, "Itzikel" — not [yet] part of
+  // the Irish tradition) get a REDUCED table with only the Rhythm column: Bars/
+  // structure/Mode aren't applicable to them, so requiring "Mode" in the header
+  // text — as this used to — never finds the table at all for those tunes and
+  // wrongly throws. Identify the table by its caption instead ("Basic musical
+  // information on this tune.", present regardless of which columns exist);
+  // fall back to the old Rhythm/Type+Mode heuristic if a page ever lacks it.
   let headerRow = null;
 
   $("table").each((_, table) => {
-    const firstRowText = $(table).find("tr").first().text();
-    if (/Rhythm|Type/i.test(firstRowText) && /Mode/i.test(firstRowText)) {
+    const caption = $(table).find("caption").first().text();
+    if (/Basic musical information/i.test(caption)) {
       headerRow = table;
       return false;
     }
   });
+
+  if (!headerRow) {
+    $("table").each((_, table) => {
+      const firstRowText = $(table).find("tr").first().text();
+      if (/Rhythm|Type/i.test(firstRowText) && /Mode/i.test(firstRowText)) {
+        headerRow = table;
+        return false;
+      }
+    });
+  }
 
   if (!headerRow) {
     throw new ParseError(
