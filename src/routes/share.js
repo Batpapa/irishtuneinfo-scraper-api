@@ -24,6 +24,35 @@ function purgeExpired() {
   }
 }
 
+// ── Defense in depth on GET /:key ──────────────────────────────────────────────
+// The keyspace (36^6 ≈ 2.18B, 10 min TTL) already makes guessing impractical on
+// its own, but a shared item can contain audio, so a per-IP rate limit costs
+// little and closes off brute-force/scraping attempts entirely. In-memory only
+// — same lifetime and "best-effort, resets on restart" character as the share
+// store itself, no need for anything heavier here.
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
+const RATE_LIMIT_MAX = 20;
+/** @type {Map<string, { count: number, windowStart: number }>} */
+const rateLimits = new Map();
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  const entry = rateLimits.get(ip);
+  if (!entry || now - entry.windowStart >= RATE_LIMIT_WINDOW_MS) {
+    rateLimits.set(ip, { count: 1, windowStart: now });
+    return false;
+  }
+  entry.count++;
+  return entry.count > RATE_LIMIT_MAX;
+}
+
+function purgeStaleRateLimits() {
+  const now = Date.now();
+  for (const [ip, entry] of rateLimits) {
+    if (now - entry.windowStart >= RATE_LIMIT_WINDOW_MS) rateLimits.delete(ip);
+  }
+}
+
 shareRouter.post("/upload", express.raw({ limit: "100mb", type: "*/*" }), (req, res) => {
   purgeExpired();
 
@@ -44,6 +73,11 @@ shareRouter.post("/upload", express.raw({ limit: "100mb", type: "*/*" }), (req, 
 
 shareRouter.get("/:key", (req, res) => {
   purgeExpired();
+  purgeStaleRateLimits();
+
+  if (isRateLimited(req.ip)) {
+    return res.status(429).json({ error: "TooManyRequests", message: "Too many requests. Please slow down." });
+  }
 
   const key = req.params.key.toUpperCase();
   const entry = store.get(key);

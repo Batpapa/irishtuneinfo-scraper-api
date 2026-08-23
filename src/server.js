@@ -9,6 +9,10 @@ import { shareRouter } from "./routes/share.js";
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Render puts the app behind a proxy — without this, req.ip is the proxy's
+// address for every request, not the client's (breaks the /share rate limit).
+app.set("trust proxy", true);
+
 app.use(cors());
 
 app.use(express.json());
