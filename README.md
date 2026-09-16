@@ -20,7 +20,8 @@ Fetches a tune's info page and returns its musical details, alternate titles, di
   "bars": 48,
   "structure": "AABBCC",
   "mode": "G Major",
-  "titles": ["Tell Her I Am", "Abair Léi go bhFuilim", "..."],
+  "titles": ["Tell Her I Am", "Abair Léi go bhFuilim", "...", "Jackson's Dasey"],
+  "titleNotes": ["2nd in set Tell Her I Am on MC; mislabeled as Trip to Sligo on WW 2; ...", "wide range of settings, ..."],
   "featuredAudioUrl": "https://www.irishtune.info/album/MC/2_19_2.mp3",
   "discography": [
     {
@@ -35,6 +36,8 @@ Fetches a tune's info page and returns its musical details, alternate titles, di
 }
 ```
 
+- `titles`: every title the site lists for the tune, the main one first, spelled and ordered as the site catalogues them (a leading article moved to the end: `"Kesh Jig, The"`). Only titles: the editorial remarks mixed into that block are in `titleNotes`, and a spelling correction given in square brackets (`O' Sullivan's John [O'Sullivan's John]`) becomes a title of its own.
+- `titleNotes`: the bracketed remarks that follow or sit inside the titles — sets the tune was recorded in, other keys, composer, comparisons with other tunes, a disambiguating number such as `"1"`. Empty when there are none.
 - `featuredAudioUrl`: the site's chosen reference recording for this tune (the play button near the top of the page), `null` if none.
 - `discography[].audioUrl`: direct mp3 link for that specific recording, `null` if none.
 

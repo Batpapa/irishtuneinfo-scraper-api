@@ -22,7 +22,7 @@ export function parseTunePage(html, id) {
 
   const title = parseTitle($);
   const { rhythm, bars, structure, mode } = parseInfoTable($);
-  const titles = parseTitles($);
+  const { titles, notes: titleNotes } = parseTitles($);
   const featuredAudioUrl = parseFeaturedAudio($);
   const discography = parseDiscography($);
   const goesWellWith = parseGoesWellWith($);
@@ -35,6 +35,7 @@ export function parseTunePage(html, id) {
     structure,
     mode,
     titles,
+    titleNotes,
     featuredAudioUrl,
     discography,
     goesWellWith,
@@ -197,12 +198,79 @@ function parseTitles($) {
     );
   }
 
-  const text = container.text();
+  return splitTitlesBlock(container.text());
+}
 
-  return text
-    .split("/")
-    .map((t) => t.trim())
-    .filter(Boolean);
+/**
+ * Separates the titles block into titles and editorial notes.
+ *
+ * The block is "Title / Title / … (note) (note)", but a plain split on "/"
+ * is wrong both ways (measured on 70 tune pages, 2026-09-17):
+ *
+ * - a note can contain a slash of its own ("compare The Sheep on the
+ *   Mountains / Na Caoirigh ar na Sléibhte", tune 1461), which made a title
+ *   out of half a note;
+ * - the notes stick to the last title ("Stumpie (1st in set … ) (composed by
+ *   …)"), and a parenthesis can sit inside a title too, as the number telling
+ *   two tunes of the same name apart ("Rosses Highland (1), The", tune 3164).
+ *
+ * So the text is walked once, tracking nesting: a slash only separates titles
+ * outside any brackets, and every bracketed group comes out of the title it
+ * sits in. Round brackets are always notes. Square brackets are either a
+ * spelling correction ("O' Sullivan's John [O'Sullivan's John]", tune 8759) —
+ * kept as a title of its own — or a comment ("[This tune is not (yet?) part
+ * of the Irish tradition…]", tune 2294), told apart by looking like a
+ * sentence: nested brackets, closing punctuation, or more than eight words.
+ *
+ * Titles are returned as the site catalogues them ("Kesh Jig, The"); moving
+ * the article back is left to the client.
+ *
+ * @param {string} text
+ * @returns {{ titles: string[], notes: string[] }}
+ */
+export function splitTitlesBlock(text) {
+  const titles = [];
+  const notes = [];
+  let current = "";
+  let variants = [];
+  let group = "";
+  let opener = "";
+  let depth = 0;
+
+  const tidy = (s) => s.replace(/\s+/g, " ").replace(/\s+,/g, ",").trim();
+  const endTitle = () => {
+    const title = tidy(current);
+    if (title) titles.push(title);
+    titles.push(...variants);
+    current = "";
+    variants = [];
+  };
+  const endGroup = () => {
+    const content = tidy(group);
+    if (!content) return;
+    const looksLikeSentence =
+      /[()[\]]/.test(content) || /[.!?:;]$/.test(content) || content.split(" ").length > 8;
+    if (opener === "[" && !looksLikeSentence) variants.push(content);
+    else notes.push(content);
+  };
+
+  for (const c of text) {
+    if (depth === 0) {
+      if (c === "(" || c === "[") { depth = 1; opener = c; group = ""; }
+      else if (c === "/") endTitle();
+      else current += c;
+      continue;
+    }
+    if (c === "(" || c === "[") depth++;
+    else if (c === ")" || c === "]") depth--;
+    if (depth === 0) endGroup();
+    else group += c;
+  }
+  // An unclosed bracket runs to the end: what it swallowed is a note, not a title.
+  if (depth > 0) { opener = "("; endGroup(); }
+  endTitle();
+
+  return { titles, notes };
 }
 
 function parseDiscography($) {
