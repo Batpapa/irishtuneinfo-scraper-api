@@ -29,6 +29,11 @@ app.use((_req, res) => {
   res.status(404).json({ error: "NotFound", message: "Unknown route." });
 });
 
-app.listen(PORT, () => {
+const server = app.listen(PORT, () => {
   console.log(`tune-scraper-api listening on http://localhost:${PORT}`);
 });
+
+// Node ends any request not fully received within 5 minutes by default. A
+// large /share upload from a phone can take longer than that; a stalled one is
+// ended by the route's own inactivity timeout instead.
+server.requestTimeout = 60 * 60 * 1000;

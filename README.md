@@ -97,6 +97,21 @@ which fetches `https://www.irishtune.info/album/MC/2_19_2.mp3` server-side and r
 
 The path may only contain letters, digits, `_`, `+`, `-`, and `/` between segments — no extension and no `..`. The server always appends `.mp3` and always fetches under `/album/`, so a request can't reach any other path or domain. The upstream response is also checked to actually be an audio file before being relayed; anything else (e.g. an error page at a path that doesn't exist) is rejected.
 
+### `/share` — short-lived item exchange
+
+Unrelated to irishtune.info: a small relay that lets one client hand an opaque binary item to another through a 6-character key, valid for 10 minutes.
+
+- `GET /share/capacity` → `{ "availableBytes": 123456789, "maxBytes": 987654321, "waiting": 0 }` — what fits right now, the largest item that could ever fit (once everything stored has expired), and how many tickets are waiting.
+- `POST /share/ticket?size=<bytes>` — a place in the queue. Answers `{ "ticket": "…", "status": "ready" }` or `{ "ticket": "…", "status": "waiting", "position": 2, "availableBytes": … }`; `413 TooLarge` with `maxBytes` if the item could never fit.
+- `GET /share/ticket/:id` — the ticket's status again. A waiting ticket that is not asked about for 60 s is dropped; poll every few seconds.
+- `DELETE /share/ticket/:id` — give up a ticket (and the room it may hold).
+- `POST /share/upload?ticket=<id>` — raw body (`application/octet-stream`). Its size must be announced by `Content-Length` (or `?size=<bytes>` if a proxy drops it) and match the ticket's. Returns `{ "key": "AB12CD", "secondsRemaining": 600 }`. Without `?ticket=`, accepted only if it fits now and nobody is waiting.
+- `GET /share/:key` — the raw bytes (case-insensitive key), with `X-Seconds-Remaining`. Rate-limited to 20 requests per minute per IP.
+
+There is no fixed size cap: items are streamed to a temporary directory (`SHARE_DIR`, default `<tmpdir>/share-store`) and the limit is that disk's free space, minus a margin (`SHARE_DISK_MARGIN_BYTES`, default 512 MiB), minus what is promised but not yet written (uploads in progress, granted tickets). `SHARE_CAPACITY_BYTES` optionally caps the store below the disk. An upload that does not fit is refused **before** its body is read. The directory is emptied on start, so a restart drops every item and every ticket.
+
+**The queue.** Everything stored expires within 10 minutes, so an item that does not fit now usually will soon. Tickets are granted strictly in order of arrival — never skipping to a smaller one that happens to fit, which would let a large item wait forever. A granted ticket holds its room for 2 minutes, until its upload starts.
+
 ## Error responses
 
 | Error | Status | Meaning |
@@ -106,6 +121,12 @@ The path may only contain letters, digits, `_`, `+`, `-`, and `/` between segmen
 | `NotAudio` | 404 | The resolved path didn't return an audio file |
 | `UpstreamError` | 502 / upstream status | irishtune.info unreachable or returned an error |
 | `ParseError` | 502 | Page structure didn't match what the parser expects (the site may have changed) |
+| `LengthRequired` | 411 | `/share/upload` without an announced size |
+| `InsufficientSpace` | 413 | `/share/upload` without a ticket, larger than the free space or while others wait; `availableBytes` says how much would fit |
+| `SizeMismatch` / `Aborted` / `Timeout` | 413 / 400 / 408 | `/share/upload` body not matching its announced size, interrupted, or stalled for 2 minutes |
+| `TooLarge` | 413 | `/share/ticket` for an item larger than the store could ever hold; `maxBytes` says the most |
+| `TicketUnknown` / `TicketNotReady` | 404 / 409 | A ticket that lapsed, or used before it was granted or for another size |
+| `InvalidSize` | 400 | `/share/ticket` without a positive `?size=` |
 
 ## Design notes
 
